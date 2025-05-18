@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { createEmbed, COLORS } = require('../utils/embeds');
 const config = require('../config');
 const fs = require('fs');
@@ -63,28 +63,37 @@ module.exports = {
             // Create the verification instructions embed
             const verifyEmbed = createEmbed({
                 title: `${config.emoji.cross} Verification Required ${config.emoji.cross}`,
-                description: `Welcome to the Holy Guild! To gain access to all channels and participate in our community, you need to verify yourself first.`,
+                description: `Welcome to the Holy Guild! To gain access to all channels and participate in our community, you need to verify yourself first.\n\n🇬🇧 Click the button below to verify yourself and get access to all channels.\n\n🇫🇷 Cliquez sur le bouton ci-dessous pour vous vérifier et accéder à tous les canaux.`,
                 thumbnail: interaction.guild.iconURL({ dynamic: true }),
                 fields: [
                     {
-                        name: 'How to Verify',
-                        value: `Simply type \`/verify\` in this channel and press Enter.\n\nAfter verification, you'll receive the ${verifiedRoleName} role and gain access to all community channels.`
+                        name: 'Why Verify? / Pourquoi se vérifier ?',
+                        value: '🇬🇧 Verification helps us keep our community safe and free from bots and spam accounts.\n\n🇫🇷 La vérification nous aide à garder notre communauté sûre et libre de bots et de comptes spam.'
                     },
                     {
-                        name: 'Why Verify?',
-                        value: 'Verification helps us keep our community safe and free from bots and spam accounts.'
-                    },
-                    {
-                        name: 'Need Help?',
-                        value: `If you're having trouble with verification, please contact a staff member for assistance.`
+                        name: 'Need Help? / Besoin d\'aide ?',
+                        value: '🇬🇧 If you\'re having trouble with verification, please contact a staff member for assistance.\n\n🇫🇷 Si vous avez des difficultés avec la vérification, veuillez contacter un membre du staff pour obtenir de l\'aide.'
                     }
                 ],
-                footer: 'Thank you for joining our community!',
+                footer: 'Thank you for joining our community! / Merci d\'avoir rejoint notre communauté !',
                 color: COLORS.ACCENT
             });
+
+            // Create the verification button
+            const button = new ButtonBuilder()
+                .setCustomId('verify_button')
+                .setLabel('Verify / Vérifier')
+                .setStyle(ButtonStyle.Success)
+                .setEmoji('✅');
+
+            const row = new ActionRowBuilder()
+                .addComponents(button);
             
-            // Send the embed to the channel
-            await channel.send({ embeds: [verifyEmbed] });
+            // Send the embed with the button to the channel
+            await channel.send({ 
+                embeds: [verifyEmbed],
+                components: [row]
+            });
             
             // Respond to the interaction
             await interaction.reply({ 

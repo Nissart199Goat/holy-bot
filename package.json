@@ -9,8 +9,9 @@
     "deploy": "node deploy-commands.js",
     "deploy:dev": "NODE_ENV=development node deploy-commands.js",
     "deploy:prod": "NODE_ENV=production node deploy-commands.js",
+    "update": "cmd /c update.bat",
     "lint": "eslint ."
-  },
+  },  
   "keywords": [
     "discord",
     "bot",

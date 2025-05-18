@@ -38,27 +38,43 @@ async function deployCommands() {
 
         console.log('Started refreshing application (/) commands...');
 
-        // Get the client ID from the environment variables
+        // Get the client ID and guild ID from the environment variables
         const clientId = process.env.CLIENT_ID;
+        const guildId = process.env.GUILD_ID;
+
         if (!clientId) {
             throw new Error('CLIENT_ID not found in environment variables');
         }
 
-        // Delete all existing commands first
+        // Delete all existing global commands
         await rest.put(
             Routes.applicationCommands(clientId),
             { body: [] }
         );
+        console.log('Successfully deleted all global application commands.');
 
-        console.log('Successfully deleted all application commands.');
+        // If guild ID is provided, delete guild-specific commands
+        if (guildId) {
+            await rest.put(
+                Routes.applicationGuildCommands(clientId, guildId),
+                { body: [] }
+            );
+            console.log('Successfully deleted all guild application commands.');
 
-        // Deploy new commands
-        await rest.put(
-            Routes.applicationCommands(clientId),
-            { body: commands }
-        );
-
-        console.log('Successfully reloaded application (/) commands.');
+            // Deploy new commands to guild
+            await rest.put(
+                Routes.applicationGuildCommands(clientId, guildId),
+                { body: commands }
+            );
+            console.log('Successfully reloaded guild (/) commands.');
+        } else {
+            // Deploy new commands globally
+            await rest.put(
+                Routes.applicationCommands(clientId),
+                { body: commands }
+            );
+            console.log('Successfully reloaded global (/) commands.');
+        }
     } catch (error) {
         console.error('Error deploying commands:', error);
     }

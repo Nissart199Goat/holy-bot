@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -17,6 +17,53 @@ const client = new Client({
 // Command collection
 client.commands = new Collection();
 
+// Function to deploy commands
+async function deployCommands() {
+    try {
+        const commands = [];
+        const commandsPath = path.join(__dirname, 'commands');
+        const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+        // Load command files
+        for (const file of commandFiles) {
+            const filePath = path.join(commandsPath, file);
+            const command = require(filePath);
+            if ('data' in command && 'execute' in command) {
+                commands.push(command.data.toJSON());
+            }
+        }
+
+        // Create REST instance
+        const rest = new REST().setToken(process.env.TOKEN);
+
+        console.log('Started refreshing application (/) commands...');
+
+        // Get the client ID from the environment variables
+        const clientId = process.env.CLIENT_ID;
+        if (!clientId) {
+            throw new Error('CLIENT_ID not found in environment variables');
+        }
+
+        // Delete all existing commands first
+        await rest.put(
+            Routes.applicationCommands(clientId),
+            { body: [] }
+        );
+
+        console.log('Successfully deleted all application commands.');
+
+        // Deploy new commands
+        await rest.put(
+            Routes.applicationCommands(clientId),
+            { body: commands }
+        );
+
+        console.log('Successfully reloaded application (/) commands.');
+    } catch (error) {
+        console.error('Error deploying commands:', error);
+    }
+}
+
 // Load commands
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -24,7 +71,6 @@ const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('
 for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);
-    // Set a new item in the Collection with the key as the command name and the value as the exported module
     if ('data' in command && 'execute' in command) {
         client.commands.set(command.data.name, command);
     } else {
@@ -45,6 +91,12 @@ for (const file of eventFiles) {
         client.on(event.name, (...args) => event.execute(...args));
     }
 }
+
+// When the client is ready, deploy commands and log in
+client.once('ready', () => {
+    console.log('Bot is ready!');
+    deployCommands();
+});
 
 // Login to Discord with your token
 client.login(process.env.TOKEN); 

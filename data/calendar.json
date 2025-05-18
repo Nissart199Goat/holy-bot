@@ -1,0 +1,71 @@
+{
+  "events": [
+    {
+      "name": "Advent Season Begins",
+      "date": "2024-12-01",
+      "description": "The beginning of the liturgical year and the season of preparation for Christmas.",
+      "type": "liturgical"
+    },
+    {
+      "name": "Christmas Day",
+      "date": "2024-12-25",
+      "description": "Celebration of the birth of Jesus Christ.",
+      "type": "major"
+    },
+    {
+      "name": "Epiphany",
+      "date": "2025-01-06",
+      "description": "Celebration of God's manifestation to the Gentiles through the visit of the Magi.",
+      "type": "major"
+    },
+    {
+      "name": "Ash Wednesday",
+      "date": "2025-03-05",
+      "description": "The beginning of Lent, a 40-day period of fasting and repentance.",
+      "type": "liturgical"
+    },
+    {
+      "name": "Palm Sunday",
+      "date": "2025-04-13",
+      "description": "Commemoration of Jesus's triumphant entry into Jerusalem.",
+      "type": "liturgical"
+    },
+    {
+      "name": "Maundy Thursday",
+      "date": "2025-04-17",
+      "description": "Commemoration of the Last Supper and Jesus washing the disciples' feet.",
+      "type": "liturgical"
+    },
+    {
+      "name": "Good Friday",
+      "date": "2025-04-18",
+      "description": "Remembrance of Jesus's crucifixion and death.",
+      "type": "major"
+    },
+    {
+      "name": "Easter Sunday",
+      "date": "2025-04-20",
+      "description": "Celebration of the resurrection of Jesus Christ.",
+      "type": "major"
+    },
+    {
+      "name": "Pentecost",
+      "date": "2025-06-08",
+      "description": "Commemoration of the Holy Spirit's descent upon the disciples.",
+      "type": "major"
+    },
+    {
+      "name": "Trinity Sunday",
+      "date": "2025-06-15",
+      "description": "Celebration of the doctrine of the Holy Trinity.",
+      "type": "liturgical"
+    },
+    {
+      "name": "All Saints' Day",
+      "date": "2025-11-01",
+      "description": "Commemoration of all saints and martyrs.",
+      "type": "liturgical"
+    }
+  ],
+  "communityEvents": []
+}

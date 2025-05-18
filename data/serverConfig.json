@@ -1,0 +1,26 @@
+{
+  "roles": {
+    "verified": "1369794264984457236",
+    "unverified": "1372303298450686013",
+    "moderator": "1372317965516804246",
+    "admin": "1372317964564566037"
+  },
+  "channels": {
+    "welcome": "1372331735672557618",
+    "rules": "1369789560094982206",
+    "verification": "1372303935175659671",
+    "log": "1372319346755633214",
+    "prayer": "1372319333958684758",
+    "announcements": "1372319318007742556",
+    "calendar": "",
+    "voiceCreator": "1372331188425068615",
+    "voiceCategory": ""
+  },
+  "settings": {
+    "welcomeEnabled": true,
+    "verificationRequired": true,
+    "logVerifications": true
+  },
+  "lastUpdated": "2025-05-14T22:15:28.760Z",
+  "updatedBy": "nissart199goat"
+}

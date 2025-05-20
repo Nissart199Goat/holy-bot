@@ -58,6 +58,66 @@ const verses = [
     {
         verse: "1 Corinthians 13:4-7",
         text: "Love is patient, love is kind. It does not envy, it does not boast, it is not proud. It does not dishonor others, it is not self-seeking, it is not easily angered, it keeps no record of wrongs. Love does not delight in evil but rejoices with the truth. It always protects, always trusts, always hopes, always perseveres."
+    },
+    {
+        verse: "Joshua 1:9",
+        text: "Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go."
+    },
+    {
+        verse: "Psalm 27:1",
+        text: "The LORD is my light and my salvation—whom shall I fear? The LORD is the stronghold of my life—of whom shall I be afraid?"
+    },
+    {
+        verse: "Colossians 3:23",
+        text: "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters."
+    },
+    {
+        verse: "Hebrews 11:1",
+        text: "Now faith is confidence in what we hope for and assurance about what we do not see."
+    },
+    {
+        verse: "James 1:5",
+        text: "If any of you lacks wisdom, you should ask God, who gives generously to all without finding fault, and it will be given to you."
+    },
+    {
+        verse: "1 Peter 5:7",
+        text: "Cast all your anxiety on him because he cares for you."
+    },
+    {
+        verse: "Psalm 16:8",
+        text: "I keep my eyes always on the LORD. With him at my right hand, I will not be shaken."
+    },
+    {
+        verse: "Lamentations 3:23",
+        text: "Great is his faithfulness; his mercies begin afresh each morning."
+    },
+    {
+        verse: "Micah 6:8",
+        text: "He has shown you, O mortal, what is good. And what does the LORD require of you? To act justly and to love mercy and to walk humbly with your God."
+    },
+    {
+        verse: "Matthew 6:33",
+        text: "But seek first his kingdom and his righteousness, and all these things will be given to you as well."
+    },
+    {
+        verse: "John 14:27",
+        text: "Peace I leave with you; my peace I give you. I do not give to you as the world gives. Do not let your hearts be troubled and do not be afraid."
+    },
+    {
+        verse: "Romans 15:13",
+        text: "May the God of hope fill you with all joy and peace as you trust in him, so that you may overflow with hope by the power of the Holy Spirit."
+    },
+    {
+        verse: "2 Corinthians 4:18",
+        text: "So we fix our eyes not on what is seen, but on what is unseen, since what is seen is temporary, but what is unseen is eternal."
+    },
+    {
+        verse: "Ephesians 3:20",
+        text: "Now to him who is able to do immeasurably more than all we ask or imagine, according to his power that is at work within us."
+    },
+    {
+        verse: "1 John 4:18",
+        text: "There is no fear in love. But perfect love drives out fear, because fear has to do with punishment. The one who fears is not made perfect in love."
     }
 ];
 

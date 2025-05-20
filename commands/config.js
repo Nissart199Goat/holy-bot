@@ -37,7 +37,8 @@ function loadConfiguration() {
                 announcements: '',
                 calendar: '',
                 voiceCreator: '',
-                voiceCategory: ''
+                voiceCategory: '',
+                blessings: ''
             },
             settings: {
                 welcomeEnabled: true,
@@ -54,7 +55,48 @@ function loadConfiguration() {
     
     try {
         const data = fs.readFileSync(configFilePath, 'utf8');
-        return JSON.parse(data);
+        const config = JSON.parse(data);
+        
+        // S'assurer que tous les champs nécessaires existent
+        const defaultConfig = {
+            roles: {
+                verified: '',
+                unverified: '',
+                moderator: '',
+                admin: ''
+            },
+            channels: {
+                welcome: '',
+                rules: '',
+                verification: '',
+                log: '',
+                prayer: '',
+                announcements: '',
+                calendar: '',
+                voiceCreator: '',
+                voiceCategory: '',
+                blessings: ''
+            },
+            settings: {
+                welcomeEnabled: true,
+                verificationRequired: true,
+                logVerifications: true
+            }
+        };
+
+        // Fusionner la configuration existante avec les valeurs par défaut
+        const mergedConfig = {
+            roles: { ...defaultConfig.roles, ...config.roles },
+            channels: { ...defaultConfig.channels, ...config.channels },
+            settings: { ...defaultConfig.settings, ...config.settings },
+            lastUpdated: config.lastUpdated || new Date().toISOString(),
+            updatedBy: config.updatedBy || 'System'
+        };
+
+        // Sauvegarder la configuration fusionnée
+        fs.writeFileSync(configFilePath, JSON.stringify(mergedConfig, null, 2));
+        
+        return mergedConfig;
     } catch (error) {
         console.error('Error loading configuration:', error);
         return null;

@@ -125,6 +125,10 @@ module.exports = {
                         .setDescription('Set the calendar channel')
                         .setRequired(false))
                 .addChannelOption(option =>
+                    option.setName('blessings')
+                        .setDescription('Set the channel for daily blessings')
+                        .setRequired(false))
+                .addChannelOption(option =>
                     option.setName('voice_creator')
                         .setDescription('Set the voice channel that creates temporary voice channels')
                         .setRequired(false))
@@ -291,6 +295,7 @@ async function handleChannelsConfig(interaction, serverConfig) {
     const logChannel = interaction.options.getChannel('log');
     const prayerChannel = interaction.options.getChannel('prayer');
     const calendarChannel = interaction.options.getChannel('calendar');
+    const blessingsChannel = interaction.options.getChannel('blessings');
     const voiceCreatorChannel = interaction.options.getChannel('voice_creator');
     const voiceCategoryChannel = interaction.options.getChannel('voice_category');
     
@@ -323,6 +328,11 @@ async function handleChannelsConfig(interaction, serverConfig) {
     
     if (calendarChannel) {
         serverConfig.channels.calendar = calendarChannel.id;
+        updated = true;
+    }
+    
+    if (blessingsChannel) {
+        serverConfig.channels.blessings = blessingsChannel.id;
         updated = true;
     }
     

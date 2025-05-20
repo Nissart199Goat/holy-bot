@@ -219,7 +219,7 @@ async function handleViewConfig(interaction, serverConfig) {
             },
             {
                 name: 'Channels',
-                value: `**Welcome:** ${channelMentions.welcome}\n**Rules:** ${channelMentions.rules}\n**Verification:** ${channelMentions.verification}\n**Log:** ${channelMentions.log}\n**Prayer:** ${channelMentions.prayer}\n**Calendar:** ${channelMentions.calendar}`
+                value: `**Welcome:** ${channelMentions.welcome}\n**Rules:** ${channelMentions.rules}\n**Verification:** ${channelMentions.verification}\n**Log:** ${channelMentions.log}\n**Prayer:** ${channelMentions.prayer}\n**Calendar:** ${channelMentions.calendar}\n**Blessings:** ${channelMentions.blessings}`
             },
             {
                 name: 'Voice Channels',

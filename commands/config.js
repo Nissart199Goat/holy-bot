@@ -34,6 +34,14 @@ module.exports = {
                 .addChannelOption(option =>
                     option.setName('level')
                         .setDescription('Set the channel for level announcements')
+                        .setRequired(false))
+                .addChannelOption(option =>
+                    option.setName('voice_creator')
+                        .setDescription('Set the channel that creates temporary voice channels when joined')
+                        .setRequired(false))
+                .addChannelOption(option =>
+                    option.setName('voice_category')
+                        .setDescription('Set the category where temporary voice channels will be created')
                         .setRequired(false)))
         .addSubcommand(subcommand =>
             subcommand
@@ -95,6 +103,12 @@ async function handleViewConfig(interaction, guildId) {
         if (config?.level_channel_id) {
             channelsValue += `**Level Announcements:** <#${config.level_channel_id}>\n`;
         }
+        if (config?.voice_creator_channel) {
+            channelsValue += `**Voice Creator:** <#${config.voice_creator_channel}>\n`;
+        }
+        if (config?.voice_category_channel) {
+            channelsValue += `**Voice Category:** <#${config.voice_category_channel}>\n`;
+        }
         
         if (!channelsValue) {
             channelsValue = 'No channels configured';
@@ -136,6 +150,8 @@ async function handleChannelsConfig(interaction, guildId) {
         const ticketCategory = interaction.options.getChannel('ticket_category');
         const ticketChannel = interaction.options.getChannel('ticket_channel');
         const level = interaction.options.getChannel('level');
+        const voiceCreator = interaction.options.getChannel('voice_creator');
+        const voiceCategory = interaction.options.getChannel('voice_category');
 
         const updates = {};
         let changesText = '';
@@ -163,6 +179,16 @@ async function handleChannelsConfig(interaction, guildId) {
         if (level) {
             updates.level_channel_id = level.id;
             changesText += `**Level Announcements Channel:** ${level}\n`;
+        }
+
+        if (voiceCreator) {
+            updates.voice_creator_channel = voiceCreator.id;
+            changesText += `**Voice Creator Channel:** ${voiceCreator}\n`;
+        }
+
+        if (voiceCategory) {
+            updates.voice_category_channel = voiceCategory.id;
+            changesText += `**Voice Category:** ${voiceCategory}\n`;
         }
 
         if (Object.keys(updates).length === 0) {

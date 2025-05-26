@@ -46,6 +46,8 @@ class Database {
                     ticket_category_id VARCHAR(20),
                     ticket_channel_id VARCHAR(20),
                     level_channel_id VARCHAR(20),
+                    voice_creator_channel VARCHAR(20),
+                    voice_category_channel VARCHAR(20),
                     autorole_id VARCHAR(20),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -105,9 +107,46 @@ class Database {
                 )
             `);
 
+            // Migration pour ajouter les colonnes voice si elles n'existent pas
+            await this.migrateVoiceColumns();
+            
             console.log('✅ Tables de base de données initialisées');
         } catch (error) {
             console.error('❌ Erreur lors de l\'initialisation des tables:', error);
+        }
+    }
+
+    async migrateVoiceColumns() {
+        try {
+            // Vérifier si les colonnes voice existent déjà
+            const [columns] = await this.connection.execute(`
+                SELECT COLUMN_NAME 
+                FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_NAME = 'server_config' 
+                AND COLUMN_NAME IN ('voice_creator_channel', 'voice_category_channel')
+            `);
+            
+            const existingColumns = columns.map(col => col.COLUMN_NAME);
+            
+            // Ajouter voice_creator_channel si elle n'existe pas
+            if (!existingColumns.includes('voice_creator_channel')) {
+                await this.connection.execute(`
+                    ALTER TABLE server_config 
+                    ADD COLUMN voice_creator_channel VARCHAR(20) AFTER level_channel_id
+                `);
+                console.log('✅ Colonne voice_creator_channel ajoutée');
+            }
+            
+            // Ajouter voice_category_channel si elle n'existe pas
+            if (!existingColumns.includes('voice_category_channel')) {
+                await this.connection.execute(`
+                    ALTER TABLE server_config 
+                    ADD COLUMN voice_category_channel VARCHAR(20) AFTER voice_creator_channel
+                `);
+                console.log('✅ Colonne voice_category_channel ajoutée');
+            }
+        } catch (error) {
+            console.error('❌ Erreur lors de la migration des colonnes voice:', error);
         }
     }
 

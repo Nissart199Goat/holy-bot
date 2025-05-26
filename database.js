@@ -17,10 +17,7 @@ class Database {
                 port: process.env.DB_PORT || 3306,
                 // Options importantes pour PebbleHost
                 ssl: false,
-                connectTimeout: 60000,
-                acquireTimeout: 60000,
-                timeout: 60000,
-                reconnect: true
+                connectTimeout: 60000
             });
 
             this.isConnected = true;

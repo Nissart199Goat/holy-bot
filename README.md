@@ -15,6 +15,14 @@ A feature-rich Discord bot for the Holy Guild community, written in JavaScript u
 - Server rules and information commands
 - Welcome messages for new members
 - **Activity-based leveling system with role rewards**
+- **📖 Daily Bible Verses**: Automated daily blessings with 30+ Bible verses
+- **🙏 Prayer Requests**: Anonymous and public prayer request system
+- **📊 User Leveling**: XP-based leveling system with leaderboards
+- **🎫 Support Tickets**: Comprehensive ticket system for community support
+- **👋 Welcome System**: Automated welcome messages for new members
+- **🎭 Auto Roles**: Automatic role assignment for new members
+- **🔊 Voice Channels**: Temporary voice channel creation system
+- **⚙️ Configuration**: Flexible server configuration system
 
 ## Requirements
 
@@ -99,3 +107,96 @@ Members can check their level progress with `/level` and view the server's leade
 ## License
 
 MIT 
+
+## 🛠️ Configuration
+
+Use the `/config` command to set up your bot:
+
+### Channels Configuration
+```
+/config channels welcome:#welcome-channel
+/config channels blessings:#daily-blessings
+/config channels level:#level-announcements
+/config channels voice_creator:#join-to-create
+/config channels voice_category:Voice Channels Category
+/config channels ticket_category:Support Category
+/config channels ticket_channel:#create-ticket
+```
+
+### Voice Channels System
+The bot can create temporary voice channels when users join a specific channel:
+
+1. **Voice Creator Channel**: Set the channel that triggers voice creation
+   - When someone joins this channel, a new temporary voice channel is created
+   - The user is automatically moved to their new channel
+   - They get management permissions for their channel
+
+2. **Voice Category**: Set the category where temporary channels are created
+   - All temporary channels will be organized under this category
+   - Optional - if not set, uses the same category as the creator channel
+
+**Example Setup:**
+```
+/config channels voice_creator:#🔊│Join to Create
+/config channels voice_category:🎙️ Voice Channels
+```
+
+### Roles Configuration
+```
+/config roles autorole:@Member
+```
+
+### View Current Configuration
+```
+/config view
+```
+
+## 📋 Commands
+
+### General Commands
+- `/help` - Show all available commands
+- `/about` - Information about the bot
+- `/ping` - Check bot latency
+
+### Bible & Prayer
+- `/bless` - Get a random Bible verse
+- `/pray <request>` - Submit a prayer request
+
+### Leveling System
+- `/level [user]` - Check user level and XP
+- `/leaderboard` - Show server leaderboard
+
+### Community
+- `/rules` - Display server rules
+- `/tag` - Show guild information
+- `/calendar` - View community calendar
+
+### Support
+- `/ticket` - Create a support ticket
+
+### Admin Only
+- `/config` - Configure bot settings
+
+## 📊 Database
+
+The bot uses MySQL for data persistence:
+- **server_config**: Server-specific configuration
+- **user_levels**: User XP and level data
+- **prayer_requests**: Prayer request submissions
+- **used_verses**: Daily blessing verse tracking
+- **tickets**: Support ticket management
+
+## 🔧 Environment Variables
+
+Required environment variables:
+```
+TOKEN=your_discord_bot_token
+CLIENT_ID=your_bot_client_id
+GUILD_ID=your_server_id (optional, for faster command deployment)
+
+# MySQL Database
+DB_HOST=your_mysql_host
+DB_USER=your_mysql_username
+DB_PASSWORD=your_mysql_password
+DB_NAME=your_database_name
+``` 

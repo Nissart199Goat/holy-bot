@@ -1,25 +1,8 @@
 const { ChannelType, PermissionFlagsBits } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
-
-// Chemin vers le fichier de configuration
-const configFilePath = path.join(__dirname, '..', 'data', 'serverConfig.json');
+const { getServerConfig } = require('../database');
 
 // Stockage des canaux temporaires créés
 const tempChannels = new Map();
-
-// Fonction pour charger la configuration
-function loadConfiguration() {
-    try {
-        if (fs.existsSync(configFilePath)) {
-            const data = fs.readFileSync(configFilePath, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading configuration:', error);
-    }
-    return null;
-}
 
 module.exports = {
     name: 'voiceStateUpdate',
@@ -37,15 +20,15 @@ module.exports = {
             console.log(`New channel: ${newState.channelId || 'None'}`);
             
             // Charger la configuration
-            const serverConfig = loadConfiguration();
+            const serverConfig = await getServerConfig(newState.guild.id);
             console.log('Server config loaded:', serverConfig ? 'Yes' : 'No');
             
             // ID du canal pour créer des vocaux temporaires
             let creatorChannelId = process.env.VOICE_CREATOR_CHANNEL_ID;
             
             // Utiliser la configuration si disponible
-            if (serverConfig && serverConfig.channels && serverConfig.channels.voiceCreator) {
-                creatorChannelId = serverConfig.channels.voiceCreator;
+            if (serverConfig && serverConfig.voice_creator_channel) {
+                creatorChannelId = serverConfig.voice_creator_channel;
                 console.log(`Using voiceCreator from config: ${creatorChannelId}`);
             } else {
                 console.log(`Using voiceCreator from env: ${creatorChannelId || 'Not set'}`);
@@ -59,8 +42,8 @@ module.exports = {
             
             // Obtenir la catégorie pour les nouveaux canaux (optionnel)
             let categoryId = null;
-            if (serverConfig && serverConfig.channels && serverConfig.channels.voiceCategory) {
-                categoryId = serverConfig.channels.voiceCategory;
+            if (serverConfig && serverConfig.voice_category_channel) {
+                categoryId = serverConfig.voice_category_channel;
                 console.log(`Using voice category: ${categoryId}`);
             }
             

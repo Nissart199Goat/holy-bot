@@ -1,24 +1,6 @@
 const { Events, PermissionFlagsBits, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { createEmbed, COLORS } = require('../utils/embeds');
 const config = require('../config');
-const fs = require('fs');
-const path = require('path');
-
-// Chemin vers le fichier de configuration
-const configFilePath = path.join(__dirname, '..', 'data', 'serverConfig.json');
-
-// Fonction pour charger la configuration
-function loadConfiguration() {
-    try {
-        if (fs.existsSync(configFilePath)) {
-            const data = fs.readFileSync(configFilePath, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading configuration:', error);
-    }
-    return null;
-}
 
 module.exports = {
     name: Events.InteractionCreate,

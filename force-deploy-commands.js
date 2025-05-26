@@ -8,7 +8,7 @@ const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 // Liste des commandes qui nécessitent les permissions admin
-const adminCommands = ['config', 'setup-verify', 'rules', 'booster', 'calendar'];
+const adminCommands = ['config', 'rules', 'booster', 'calendar'];
 
 console.log('Chargement des commandes...');
 

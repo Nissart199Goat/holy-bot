@@ -23,15 +23,12 @@ function loadConfiguration() {
         // Créer une configuration par défaut
         const defaultConfig = {
             roles: {
-                verified: '',
-                unverified: '',
                 moderator: '',
                 admin: ''
             },
             channels: {
                 welcome: '',
                 rules: '',
-                verification: '',
                 log: '',
                 prayer: '',
                 announcements: '',
@@ -41,9 +38,7 @@ function loadConfiguration() {
                 blessings: ''
             },
             settings: {
-                welcomeEnabled: true,
-                verificationRequired: true,
-                logVerifications: true
+                welcomeEnabled: true
             },
             lastUpdated: new Date().toISOString(),
             updatedBy: 'System'
@@ -60,15 +55,12 @@ function loadConfiguration() {
         // S'assurer que tous les champs nécessaires existent
         const defaultConfig = {
             roles: {
-                verified: '',
-                unverified: '',
                 moderator: '',
                 admin: ''
             },
             channels: {
                 welcome: '',
                 rules: '',
-                verification: '',
                 log: '',
                 prayer: '',
                 announcements: '',
@@ -78,9 +70,7 @@ function loadConfiguration() {
                 blessings: ''
             },
             settings: {
-                welcomeEnabled: true,
-                verificationRequired: true,
-                logVerifications: true
+                welcomeEnabled: true
             }
         };
 
@@ -123,14 +113,6 @@ module.exports = {
                 .setName('roles')
                 .setDescription('Configure roles')
                 .addRoleOption(option =>
-                    option.setName('verified')
-                        .setDescription('Set the verified role')
-                        .setRequired(false))
-                .addRoleOption(option =>
-                    option.setName('unverified')
-                        .setDescription('Set the unverified role')
-                        .setRequired(false))
-                .addRoleOption(option =>
                     option.setName('moderator')
                         .setDescription('Set the moderator role')
                         .setRequired(false))
@@ -149,10 +131,6 @@ module.exports = {
                 .addChannelOption(option =>
                     option.setName('rules')
                         .setDescription('Set the rules channel')
-                        .setRequired(false))
-                .addChannelOption(option =>
-                    option.setName('verification')
-                        .setDescription('Set the verification channel')
                         .setRequired(false))
                 .addChannelOption(option =>
                     option.setName('log')
@@ -185,14 +163,6 @@ module.exports = {
                 .addBooleanOption(option =>
                     option.setName('welcome_enabled')
                         .setDescription('Enable/disable welcome messages')
-                        .setRequired(false))
-                .addBooleanOption(option =>
-                    option.setName('verification_required')
-                        .setDescription('Require verification for new members')
-                        .setRequired(false))
-                .addBooleanOption(option =>
-                    option.setName('log_verifications')
-                        .setDescription('Log when members verify')
                         .setRequired(false))),
         
     async execute(interaction) {
@@ -257,11 +227,11 @@ async function handleViewConfig(interaction, serverConfig) {
         fields: [
             {
                 name: 'Roles',
-                value: `**Verified:** ${roleMentions.verified}\n**Unverified:** ${roleMentions.unverified}\n**Moderator:** ${roleMentions.moderator}\n**Admin:** ${roleMentions.admin}`
+                value: `**Moderator:** ${roleMentions.moderator}\n**Admin:** ${roleMentions.admin}`
             },
             {
                 name: 'Channels',
-                value: `**Welcome:** ${channelMentions.welcome}\n**Rules:** ${channelMentions.rules}\n**Verification:** ${channelMentions.verification}\n**Log:** ${channelMentions.log}\n**Prayer:** ${channelMentions.prayer}\n**Calendar:** ${channelMentions.calendar}\n**Blessings:** ${channelMentions.blessings}`
+                value: `**Welcome:** ${channelMentions.welcome}\n**Rules:** ${channelMentions.rules}\n**Log:** ${channelMentions.log}\n**Prayer:** ${channelMentions.prayer}\n**Calendar:** ${channelMentions.calendar}\n**Blessings:** ${channelMentions.blessings}`
             },
             {
                 name: 'Voice Channels',
@@ -269,7 +239,7 @@ async function handleViewConfig(interaction, serverConfig) {
             },
             {
                 name: 'Settings',
-                value: `**Welcome Messages:** ${serverConfig.settings.welcomeEnabled ? '✅ Enabled' : '❌ Disabled'}\n**Verification Required:** ${serverConfig.settings.verificationRequired ? '✅ Enabled' : '❌ Disabled'}\n**Log Verifications:** ${serverConfig.settings.logVerifications ? '✅ Enabled' : '❌ Disabled'}`
+                value: `**Welcome Messages:** ${serverConfig.settings.welcomeEnabled ? '✅ Enabled' : '❌ Disabled'}`
             },
             {
                 name: 'Last Updated',
@@ -285,22 +255,10 @@ async function handleViewConfig(interaction, serverConfig) {
 
 // Fonction pour gérer la configuration des rôles
 async function handleRolesConfig(interaction, serverConfig) {
-    const verifiedRole = interaction.options.getRole('verified');
-    const unverifiedRole = interaction.options.getRole('unverified');
     const moderatorRole = interaction.options.getRole('moderator');
     const adminRole = interaction.options.getRole('admin');
     
     let updated = false;
-    
-    if (verifiedRole) {
-        serverConfig.roles.verified = verifiedRole.id;
-        updated = true;
-    }
-    
-    if (unverifiedRole) {
-        serverConfig.roles.unverified = unverifiedRole.id;
-        updated = true;
-    }
     
     if (moderatorRole) {
         serverConfig.roles.moderator = moderatorRole.id;
@@ -333,7 +291,6 @@ async function handleRolesConfig(interaction, serverConfig) {
 async function handleChannelsConfig(interaction, serverConfig) {
     const welcomeChannel = interaction.options.getChannel('welcome');
     const rulesChannel = interaction.options.getChannel('rules');
-    const verificationChannel = interaction.options.getChannel('verification');
     const logChannel = interaction.options.getChannel('log');
     const prayerChannel = interaction.options.getChannel('prayer');
     const calendarChannel = interaction.options.getChannel('calendar');
@@ -350,11 +307,6 @@ async function handleChannelsConfig(interaction, serverConfig) {
     
     if (rulesChannel) {
         serverConfig.channels.rules = rulesChannel.id;
-        updated = true;
-    }
-    
-    if (verificationChannel) {
-        serverConfig.channels.verification = verificationChannel.id;
         updated = true;
     }
     
@@ -408,23 +360,11 @@ async function handleChannelsConfig(interaction, serverConfig) {
 // Fonction pour gérer la configuration des paramètres généraux
 async function handleSettingsConfig(interaction, serverConfig) {
     const welcomeEnabled = interaction.options.getBoolean('welcome_enabled');
-    const verificationRequired = interaction.options.getBoolean('verification_required');
-    const logVerifications = interaction.options.getBoolean('log_verifications');
     
     let updated = false;
     
     if (welcomeEnabled !== null) {
         serverConfig.settings.welcomeEnabled = welcomeEnabled;
-        updated = true;
-    }
-    
-    if (verificationRequired !== null) {
-        serverConfig.settings.verificationRequired = verificationRequired;
-        updated = true;
-    }
-    
-    if (logVerifications !== null) {
-        serverConfig.settings.logVerifications = logVerifications;
         updated = true;
     }
     

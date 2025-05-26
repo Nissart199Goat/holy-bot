@@ -16,7 +16,6 @@ module.exports = {
                 { name: '`/about`', value: 'Information about the bot' }
             ],
             "Community": [
-                { name: '`/verify`', value: `Get the ${config.emoji.cross} role and access to all channels` },
                 { name: '`/level`', value: 'Check your current level and experience' },
                 { name: '`/leaderboard`', value: 'View the community experience leaderboard' },
                 { name: '`/ticket create`', value: 'Create a support ticket for pastoral care or questions' },

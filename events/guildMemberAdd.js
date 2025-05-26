@@ -31,8 +31,6 @@ module.exports = {
             // Obtenir les IDs à partir de la configuration
             let welcomeChannelId = process.env.WELCOME_CHANNEL_ID || '1371552029834481668';
             let rulesChannelId = process.env.RULES_CHANNEL_ID || '1371552029834481668';
-            let verificationChannelId = process.env.VERIFICATION_CHANNEL_ID || '1371552029834481668';
-            let newMemberRoleId = process.env.NEW_MEMBER_ROLE_ID || '1371946765800181820';
             
             // Vérifier si les messages d'accueil sont activés
             let welcomeEnabled = true;
@@ -42,11 +40,6 @@ module.exports = {
                 if (serverConfig.channels) {
                     if (serverConfig.channels.welcome) welcomeChannelId = serverConfig.channels.welcome;
                     if (serverConfig.channels.rules) rulesChannelId = serverConfig.channels.rules;
-                    if (serverConfig.channels.verification) verificationChannelId = serverConfig.channels.verification;
-                }
-                
-                if (serverConfig.roles && serverConfig.roles.unverified) {
-                    newMemberRoleId = serverConfig.roles.unverified;
                 }
                 
                 if (serverConfig.settings && serverConfig.settings.welcomeEnabled !== undefined) {
@@ -54,20 +47,8 @@ module.exports = {
                 }
             }
             
-            // Si les messages d'accueil sont désactivés, attribuer simplement le rôle et quitter
+            // Si les messages d'accueil sont désactivés, quitter
             if (!welcomeEnabled) {
-                // Attribuer le rôle de nouveau membre si nécessaire
-                if (newMemberRoleId) {
-                    try {
-                        const newMemberRole = member.guild.roles.cache.get(newMemberRoleId);
-                        if (newMemberRole) {
-                            await member.roles.add(newMemberRole);
-                            console.log(`Added new member role to ${member.user.tag} (welcome messages disabled)`);
-                        }
-                    } catch (roleError) {
-                        console.error('Error adding new member role:', roleError);
-                    }
-                }
                 return;
             }
             
@@ -78,11 +59,7 @@ module.exports = {
                 fields: [
                     {
                         name: 'Getting Started',
-                        value: `Please check out our <#${rulesChannelId}> to understand our community guidelines and visit <#${verificationChannelId}> to get properly verified.`
-                    },
-                    {
-                        name: 'Verification',
-                        value: `Use the \`/verify\` command to receive the ${config.emoji.cross} role and gain full access to our server.`
+                        value: `Please check out our <#${rulesChannelId}> to understand our community guidelines and start participating in our community!`
                     },
                     {
                         name: 'Guild Tag',
@@ -108,20 +85,7 @@ module.exports = {
                 console.log(`Welcome channel with ID ${welcomeChannelId} not found. Please check if the channel exists or use /config to set it.`);
             }
             
-            // Attribuer le rôle de nouveau membre
-            if (newMemberRoleId) {
-                try {
-                    const newMemberRole = member.guild.roles.cache.get(newMemberRoleId);
-                    if (newMemberRole) {
-                        await member.roles.add(newMemberRole);
-                        console.log(`Added new member role to ${member.user.tag}`);
-                    } else {
-                        console.log(`Role with ID ${newMemberRoleId} not found. Please check if the role exists or use /config to set it.`);
-                    }
-                } catch (roleError) {
-                    console.error('Error adding new member role:', roleError);
-                }
-            }
+
         } catch (error) {
             console.error('Error in guildMemberAdd event:', error);
         }

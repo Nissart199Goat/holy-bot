@@ -22,7 +22,7 @@ for (const file of commandFiles) {
         } else {
             console.log('  - Accessible à tous les utilisateurs');
             // Forcer l'accessibilité pour les commandes non-admin
-            if (!['config', 'setup-verify', 'rules', 'booster'].includes(commandData.name)) {
+            if (!['config', 'rules', 'booster'].includes(commandData.name)) {
                 commandData.default_member_permissions = null;
             }
         }

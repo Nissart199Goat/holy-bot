@@ -24,7 +24,8 @@ function loadConfiguration() {
         const defaultConfig = {
             roles: {
                 moderator: '',
-                admin: ''
+                admin: '',
+                autorole: ''
             },
             channels: {
                 welcome: '',
@@ -56,7 +57,8 @@ function loadConfiguration() {
         const defaultConfig = {
             roles: {
                 moderator: '',
-                admin: ''
+                admin: '',
+                autorole: ''
             },
             channels: {
                 welcome: '',
@@ -119,6 +121,10 @@ module.exports = {
                 .addRoleOption(option =>
                     option.setName('admin')
                         .setDescription('Set the admin role')
+                        .setRequired(false))
+                .addRoleOption(option =>
+                    option.setName('autorole')
+                        .setDescription('Set the role automatically given to new members')
                         .setRequired(false)))
         .addSubcommand(subcommand =>
             subcommand
@@ -227,7 +233,7 @@ async function handleViewConfig(interaction, serverConfig) {
         fields: [
             {
                 name: 'Roles',
-                value: `**Moderator:** ${roleMentions.moderator}\n**Admin:** ${roleMentions.admin}`
+                value: `**Moderator:** ${roleMentions.moderator}\n**Admin:** ${roleMentions.admin}\n**Auto Role:** ${roleMentions.autorole}`
             },
             {
                 name: 'Channels',
@@ -257,6 +263,7 @@ async function handleViewConfig(interaction, serverConfig) {
 async function handleRolesConfig(interaction, serverConfig) {
     const moderatorRole = interaction.options.getRole('moderator');
     const adminRole = interaction.options.getRole('admin');
+    const autorole = interaction.options.getRole('autorole');
     
     let updated = false;
     
@@ -267,6 +274,11 @@ async function handleRolesConfig(interaction, serverConfig) {
     
     if (adminRole) {
         serverConfig.roles.admin = adminRole.id;
+        updated = true;
+    }
+    
+    if (autorole) {
+        serverConfig.roles.autorole = autorole.id;
         updated = true;
     }
     

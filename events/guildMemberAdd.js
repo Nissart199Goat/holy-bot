@@ -47,8 +47,25 @@ module.exports = {
                 }
             }
             
-            // Si les messages d'accueil sont désactivés, quitter
+            // Si les messages d'accueil sont désactivés, attribuer quand même l'autorole
             if (!welcomeEnabled) {
+                // Attribuer l'autorole si configuré
+                let autoroleId = null;
+                if (serverConfig && serverConfig.roles && serverConfig.roles.autorole) {
+                    autoroleId = serverConfig.roles.autorole;
+                }
+                
+                if (autoroleId) {
+                    try {
+                        const autorole = member.guild.roles.cache.get(autoroleId);
+                        if (autorole) {
+                            await member.roles.add(autorole);
+                            console.log(`Added autorole ${autorole.name} to ${member.user.tag} (welcome messages disabled)`);
+                        }
+                    } catch (roleError) {
+                        console.error('Error adding autorole:', roleError);
+                    }
+                }
                 return;
             }
             
@@ -83,6 +100,26 @@ module.exports = {
                 welcomeChannel.send(`${config.emoji.heart} Welcome to our faith community, ${member}! May your time here be blessed. ${config.emoji.pray}`);
             } else {
                 console.log(`Welcome channel with ID ${welcomeChannelId} not found. Please check if the channel exists or use /config to set it.`);
+            }
+            
+            // Attribuer l'autorole si configuré
+            let autoroleId = null;
+            if (serverConfig && serverConfig.roles && serverConfig.roles.autorole) {
+                autoroleId = serverConfig.roles.autorole;
+            }
+            
+            if (autoroleId) {
+                try {
+                    const autorole = member.guild.roles.cache.get(autoroleId);
+                    if (autorole) {
+                        await member.roles.add(autorole);
+                        console.log(`Added autorole ${autorole.name} to ${member.user.tag}`);
+                    } else {
+                        console.log(`Autorole with ID ${autoroleId} not found. Please check if the role exists or use /config to set it.`);
+                    }
+                } catch (roleError) {
+                    console.error('Error adding autorole:', roleError);
+                }
             }
             
 

@@ -21,27 +21,48 @@ client.commands = new Collection();
 // Function to deploy commands
 async function deployCommands() {
     try {
+        console.log('🔄 Starting command deployment...');
+        
         const commands = [];
         const commandsPath = path.join(__dirname, 'commands');
         const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
+        console.log(`📁 Found ${commandFiles.length} command files`);
+
         // Load command files
         for (const file of commandFiles) {
-            const filePath = path.join(commandsPath, file);
-            const command = require(filePath);
-            if ('data' in command && 'execute' in command) {
-                commands.push(command.data.toJSON());
+            try {
+                const filePath = path.join(commandsPath, file);
+                const command = require(filePath);
+                if ('data' in command && 'execute' in command) {
+                    commands.push(command.data.toJSON());
+                    console.log(`✅ Loaded command: ${command.data.name}`);
+                } else {
+                    console.log(`⚠️ Skipping ${file}: missing data or execute`);
+                }
+            } catch (error) {
+                console.error(`❌ Error loading command ${file}:`, error.message);
             }
         }
 
+        console.log(`🎯 Total commands to deploy: ${commands.length}`);
+
         // Create REST instance
-        const rest = new REST().setToken(process.env.TOKEN);
+        const token = process.env.TOKEN || process.env.DISCORD_TOKEN;
+        if (!token) {
+            throw new Error('No Discord token found in environment variables');
+        }
+        
+        const rest = new REST().setToken(token);
 
         console.log('Started refreshing application (/) commands...');
 
         // Get the client ID and guild ID from the environment variables
         const clientId = process.env.CLIENT_ID;
         const guildId = process.env.GUILD_ID;
+
+        console.log(`🔑 Client ID: ${clientId ? 'Found' : 'Missing'}`);
+        console.log(`🏠 Guild ID: ${guildId ? guildId : 'Not set (will deploy globally)'}`);
 
         if (!clientId) {
             throw new Error('CLIENT_ID not found in environment variables');
@@ -67,17 +88,20 @@ async function deployCommands() {
                 Routes.applicationGuildCommands(clientId, guildId),
                 { body: commands }
             );
-            console.log('Successfully reloaded guild (/) commands.');
+            console.log(`🎉 Successfully reloaded ${commands.length} guild (/) commands.`);
         } else {
             // Deploy new commands globally
             await rest.put(
                 Routes.applicationCommands(clientId),
                 { body: commands }
             );
-            console.log('Successfully reloaded global (/) commands.');
+            console.log(`🎉 Successfully reloaded ${commands.length} global (/) commands.`);
         }
+        
+        console.log('✅ Command deployment completed successfully!');
     } catch (error) {
-        console.error('Error deploying commands:', error);
+        console.error('❌ Error deploying commands:', error);
+        console.error('Stack trace:', error.stack);
     }
 }
 
@@ -135,4 +159,11 @@ process.on('SIGTERM', async () => {
 });
 
 // Login to Discord with your token
-client.login(process.env.TOKEN); 
+const token = process.env.TOKEN || process.env.DISCORD_TOKEN;
+if (!token) {
+    console.error('❌ No Discord token found! Please set TOKEN or DISCORD_TOKEN in your .env file');
+    process.exit(1);
+}
+
+console.log('🔐 Logging in to Discord...');
+client.login(token); 

@@ -11,7 +11,7 @@
     "deploy:prod": "NODE_ENV=production node deploy-commands.js",
     "update": "cmd /c update.bat",
     "lint": "eslint ."
-  },  
+  },
   "keywords": [
     "discord",
     "bot",
@@ -23,7 +23,7 @@
   "dependencies": {
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
-    "mysql2": "^3.6.5"
+    "mysql2": "^3.14.1"
   },
   "engines": {
     "node": ">=18.0.0"

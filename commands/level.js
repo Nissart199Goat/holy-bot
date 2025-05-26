@@ -1,8 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { createEmbed, COLORS } = require('../utils/embeds');
-const { getUserData } = require('../data/users');
 const { getNextRole, getCurrentRole } = require('../data/roles');
 const config = require('../config');
+const database = require('../database');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -20,10 +20,15 @@ module.exports = {
             const targetMember = interaction.options.getMember('user') || interaction.member;
             
             // Get level data
-            const userData = getUserData(targetUser.id, interaction.guild.id);
+            const userData = await database.getUserLevel(targetUser.id, interaction.guild.id);
+            
+            // Default values if user not found
+            const level = userData ? userData.level : 1;
+            const xp = userData ? userData.xp : 0;
+            const xpForNextLevel = Math.floor(100 * Math.pow(level, 1.5));
             
             // Calculate progression percentage
-            const progressPercent = Math.floor((userData.xp / userData.xpForNextLevel) * 100);
+            const progressPercent = Math.floor((xp / xpForNextLevel) * 100);
             
             // Create visual progress bar
             let progressBar = '';
@@ -39,13 +44,13 @@ module.exports = {
             }
             
             // Get current role and next role
-            const currentRole = getCurrentRole(userData.level);
-            const nextRole = getNextRole(userData.level);
+            const currentRole = getCurrentRole(level);
+            const nextRole = getNextRole(level);
             
             // Create embed
             const embed = createEmbed({
                 title: `${targetUser.username}'s Level`,
-                description: `${config.visuals.divider}\n\n**Level**: ${userData.level}\n**XP**: ${userData.xp}/${userData.xpForNextLevel}\n\n**Progress**: ${progressPercent}%\n${progressBar}\n\n${config.visuals.divider}`,
+                description: `${config.visuals.divider}\n\n**Level**: ${level}\n**XP**: ${xp}/${xpForNextLevel}\n\n**Progress**: ${progressPercent}%\n${progressBar}\n\n${config.visuals.divider}`,
                 thumbnail: targetUser.displayAvatarURL({ dynamic: true }),
                 color: COLORS.ACCENT,
                 fields: []

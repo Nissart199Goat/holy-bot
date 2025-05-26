@@ -1,8 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { createEmbed, COLORS } = require('../utils/embeds');
-const { getLeaderboard } = require('../data/users');
 const { getCurrentRole } = require('../data/roles');
 const config = require('../config');
+const database = require('../database');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,7 +23,7 @@ module.exports = {
             const limit = interaction.options.getInteger('limit') || 10;
             
             // Get the leaderboard
-            const leaderboard = getLeaderboard(interaction.guild.id, limit);
+            const leaderboard = await database.getLeaderboard(interaction.guild.id, limit);
             
             if (!leaderboard.length) {
                 return interaction.editReply('No level data is available at the moment.');

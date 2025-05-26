@@ -2,54 +2,34 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { createEmbed, COLORS } = require('../utils/embeds');
 const config = require('../config');
 const verses = require('../data/verses');
-const fs = require('fs');
-const path = require('path');
-
-// Chemin vers le fichier des versets utilisés
-const usedVersesPath = path.join(__dirname, '..', 'data', 'usedVerses.json');
-
-// Fonction pour charger les versets utilisés
-function loadUsedVerses() {
-    try {
-        if (fs.existsSync(usedVersesPath)) {
-            const data = fs.readFileSync(usedVersesPath, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading used verses:', error);
-    }
-    return { usedVerses: [], lastReset: null };
-}
-
-// Fonction pour sauvegarder les versets utilisés
-function saveUsedVerses(data) {
-    try {
-        fs.writeFileSync(usedVersesPath, JSON.stringify(data, null, 4));
-    } catch (error) {
-        console.error('Error saving used verses:', error);
-    }
-}
+const database = require('../database');
 
 // Fonction pour obtenir un verset non utilisé
-function getUnusedVerse() {
-    const data = loadUsedVerses();
-    const unusedVerses = verses.filter(verse => !data.usedVerses.includes(verse.verse));
-    
-    // Si tous les versets ont été utilisés, réinitialiser
-    if (unusedVerses.length === 0) {
-        data.usedVerses = [];
-        saveUsedVerses(data);
-        return verses[Math.floor(Math.random() * verses.length)];
+async function getUnusedVerse(guildId) {
+    try {
+        const usedVersesToday = await database.getUsedVersesToday(guildId);
+        const unusedVerses = verses.filter((verse, index) => !usedVersesToday.includes(index));
+        
+        // Si tous les versets ont été utilisés aujourd'hui, prendre un verset aléatoire
+        if (unusedVerses.length === 0) {
+            const randomIndex = Math.floor(Math.random() * verses.length);
+            return { verse: verses[randomIndex], index: randomIndex };
+        }
+        
+        // Sélectionner un verset aléatoire parmi les non utilisés
+        const randomVerse = unusedVerses[Math.floor(Math.random() * unusedVerses.length)];
+        const verseIndex = verses.findIndex(v => v.verse === randomVerse.verse);
+        
+        // Marquer le verset comme utilisé
+        await database.markVerseAsUsed(verseIndex, guildId);
+        
+        return { verse: randomVerse, index: verseIndex };
+    } catch (error) {
+        console.error('Error getting unused verse:', error);
+        // Fallback: retourner un verset aléatoire
+        const randomIndex = Math.floor(Math.random() * verses.length);
+        return { verse: verses[randomIndex], index: randomIndex };
     }
-    
-    // Sélectionner un verset aléatoire parmi les non utilisés
-    const randomVerse = unusedVerses[Math.floor(Math.random() * unusedVerses.length)];
-    
-    // Ajouter le verset à la liste des utilisés
-    data.usedVerses.push(randomVerse.verse);
-    saveUsedVerses(data);
-    
-    return randomVerse;
 }
 
 module.exports = {
@@ -67,7 +47,7 @@ module.exports = {
         const targetUser = interaction.options.getUser('user');
         
         // Get an unused verse
-        const verse = getUnusedVerse();
+        const { verse } = await getUnusedVerse(interaction.guild.id);
         
         // Create custom message based on whether a user is targeted
         let title, description;

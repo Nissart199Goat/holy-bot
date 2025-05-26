@@ -1,23 +1,6 @@
 const { createEmbed } = require('../utils/embeds');
 const config = require('../config');
-const fs = require('fs');
-const path = require('path');
-
-// Chemin vers le fichier de configuration
-const configFilePath = path.join(__dirname, '..', 'data', 'serverConfig.json');
-
-// Fonction pour charger la configuration
-function loadConfiguration() {
-    try {
-        if (fs.existsSync(configFilePath)) {
-            const data = fs.readFileSync(configFilePath, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading configuration in guildMemberAdd event:', error);
-    }
-    return null;
-}
+const database = require('../database');
 
 module.exports = {
     name: 'guildMemberAdd',
@@ -25,47 +8,17 @@ module.exports = {
         try {
             console.log(`New member joined: ${member.user.tag}`);
             
-            // Charger la configuration centralisée
-            const serverConfig = loadConfiguration();
+            // Charger la configuration depuis MySQL
+            const serverConfig = await database.getServerConfig(member.guild.id);
             
             // Obtenir les IDs à partir de la configuration
-            let welcomeChannelId = process.env.WELCOME_CHANNEL_ID || '1371552029834481668';
-            let rulesChannelId = process.env.RULES_CHANNEL_ID || '1371552029834481668';
+            let welcomeChannelId = serverConfig?.welcome_channel_id || process.env.WELCOME_CHANNEL_ID || '1371552029834481668';
             
-            // Vérifier si les messages d'accueil sont activés
+            // Pour l'instant, on garde les messages d'accueil activés par défaut
             let welcomeEnabled = true;
             
-            // Utiliser la configuration si disponible
-            if (serverConfig) {
-                if (serverConfig.channels) {
-                    if (serverConfig.channels.welcome) welcomeChannelId = serverConfig.channels.welcome;
-                    if (serverConfig.channels.rules) rulesChannelId = serverConfig.channels.rules;
-                }
-                
-                if (serverConfig.settings && serverConfig.settings.welcomeEnabled !== undefined) {
-                    welcomeEnabled = serverConfig.settings.welcomeEnabled;
-                }
-            }
-            
-            // Si les messages d'accueil sont désactivés, attribuer quand même l'autorole
+            // Si les messages d'accueil sont désactivés, on peut quand même continuer
             if (!welcomeEnabled) {
-                // Attribuer l'autorole si configuré
-                let autoroleId = null;
-                if (serverConfig && serverConfig.roles && serverConfig.roles.autorole) {
-                    autoroleId = serverConfig.roles.autorole;
-                }
-                
-                if (autoroleId) {
-                    try {
-                        const autorole = member.guild.roles.cache.get(autoroleId);
-                        if (autorole) {
-                            await member.roles.add(autorole);
-                            console.log(`Added autorole ${autorole.name} to ${member.user.tag} (welcome messages disabled)`);
-                        }
-                    } catch (roleError) {
-                        console.error('Error adding autorole:', roleError);
-                    }
-                }
                 return;
             }
             
@@ -76,7 +29,7 @@ module.exports = {
                 fields: [
                     {
                         name: 'Getting Started',
-                        value: `Please check out our <#${rulesChannelId}> to understand our community guidelines and start participating in our community!`
+                        value: `Welcome to our faith community! Start participating and earning XP by chatting with other members.`
                     },
                     {
                         name: 'Guild Tag',
@@ -103,19 +56,14 @@ module.exports = {
             }
             
             // Attribuer l'autorole si configuré
-            let autoroleId = null;
-            if (serverConfig && serverConfig.roles && serverConfig.roles.autorole) {
-                autoroleId = serverConfig.roles.autorole;
-            }
-            
-            if (autoroleId) {
+            if (serverConfig?.autorole_id) {
                 try {
-                    const autorole = member.guild.roles.cache.get(autoroleId);
+                    const autorole = member.guild.roles.cache.get(serverConfig.autorole_id);
                     if (autorole) {
                         await member.roles.add(autorole);
                         console.log(`Added autorole ${autorole.name} to ${member.user.tag}`);
                     } else {
-                        console.log(`Autorole with ID ${autoroleId} not found. Please check if the role exists or use /config to set it.`);
+                        console.log(`Autorole with ID ${serverConfig.autorole_id} not found.`);
                     }
                 } catch (roleError) {
                     console.error('Error adding autorole:', roleError);

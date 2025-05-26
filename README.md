@@ -24,6 +24,8 @@ A feature-rich Discord bot for the Holy Guild community, written in JavaScript u
 
 ## Installation
 
+### Local Development
+
 1. Clone this repository
 2. Install dependencies:
    ```
@@ -31,22 +33,16 @@ A feature-rich Discord bot for the Holy Guild community, written in JavaScript u
    ```
 3. Create a `.env` file in the root directory with the following variables:
    ```
-   TOKEN=your_discord_bot_token
+   # Discord Bot Configuration
+   DISCORD_TOKEN=your_discord_bot_token
    CLIENT_ID=your_bot_client_id
-   GUILD_ID=your_server_id
-   VERIFIED_ROLE_ID=role_id_for_verification
-   PRAYER_CHANNEL_ID=channel_id_for_prayer_requests
    
-   # Level System Roles
-   ROLE_ID_NOVICE=novice_role_id
-   ROLE_ID_DISCIPLE=disciple_role_id
-   ROLE_ID_DEVOTEE=devotee_role_id
-   ROLE_ID_ENLIGHTENED=enlightened_role_id
-   ROLE_ID_BLESSED=blessed_role_id
-   ROLE_ID_SAINT=saint_role_id
-   
-   # Optional: Level notifications channel
-   LEVEL_CHANNEL_ID=level_channel_id
+   # MySQL Database Configuration
+   DB_HOST=your_mysql_host
+   DB_USER=your_mysql_username
+   DB_PASSWORD=your_mysql_password
+   DB_NAME=your_database_name
+   DB_PORT=3306
    ```
 4. Deploy slash commands:
    ```
@@ -56,6 +52,10 @@ A feature-rich Discord bot for the Holy Guild community, written in JavaScript u
    ```
    npm start
    ```
+
+### PebbleHost Production Deployment
+
+For production deployment on PebbleHost with MySQL, see the detailed guide: [PEBBLEHOST_SETUP.md](PEBBLEHOST_SETUP.md)
 
 ## Command List
 
@@ -70,6 +70,8 @@ A feature-rich Discord bot for the Holy Guild community, written in JavaScript u
 - `/pray [request]` - Submit a prayer request
 - `/level [user]` - Shows your level or another user's level
 - `/leaderboard [limit]` - Displays the server's level leaderboard
+- `/config` - Configure bot settings (Admin only)
+- `/migrate` - Migrate data from JSON to MySQL (Admin only)
 
 ## Leveling System
 

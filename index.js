@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const database = require('./database');
 require('dotenv').config();
 
 // Create a new client instance
@@ -109,9 +110,28 @@ for (const file of eventFiles) {
 }
 
 // When the client is ready, deploy commands and log in
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log('Bot is ready!');
+    
+    // Connect to database
+    await database.connect();
+    
     deployCommands();
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    console.log('Shutting down...');
+    await database.disconnect();
+    client.destroy();
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    console.log('Shutting down...');
+    await database.disconnect();
+    client.destroy();
+    process.exit(0);
 });
 
 // Login to Discord with your token

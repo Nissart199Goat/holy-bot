@@ -2,54 +2,34 @@ const { Events } = require('discord.js');
 const { createEmbed, COLORS } = require('../utils/embeds');
 const config = require('../config');
 const verses = require('../data/verses');
-const fs = require('fs');
-const path = require('path');
-
-// Chemin vers le fichier des versets utilisés
-const usedVersesPath = path.join(__dirname, '..', 'data', 'usedVerses.json');
-
-// Fonction pour charger les versets utilisés
-function loadUsedVerses() {
-    try {
-        if (fs.existsSync(usedVersesPath)) {
-            const data = fs.readFileSync(usedVersesPath, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading used verses:', error);
-    }
-    return { usedVerses: [], lastReset: null };
-}
-
-// Fonction pour sauvegarder les versets utilisés
-function saveUsedVerses(data) {
-    try {
-        fs.writeFileSync(usedVersesPath, JSON.stringify(data, null, 4));
-    } catch (error) {
-        console.error('Error saving used verses:', error);
-    }
-}
+const database = require('../database');
 
 // Fonction pour obtenir un verset non utilisé
-function getUnusedVerse() {
-    const data = loadUsedVerses();
-    const unusedVerses = verses.filter(verse => !data.usedVerses.includes(verse.verse));
-    
-    // Si tous les versets ont été utilisés, réinitialiser
-    if (unusedVerses.length === 0) {
-        data.usedVerses = [];
-        saveUsedVerses(data);
-        return verses[Math.floor(Math.random() * verses.length)];
+async function getUnusedVerse(guildId) {
+    try {
+        const usedVersesToday = await database.getUsedVersesToday(guildId);
+        const unusedVerses = verses.filter((verse, index) => !usedVersesToday.includes(index));
+        
+        // Si tous les versets ont été utilisés aujourd'hui, prendre un verset aléatoire
+        if (unusedVerses.length === 0) {
+            const randomIndex = Math.floor(Math.random() * verses.length);
+            return { verse: verses[randomIndex], index: randomIndex };
+        }
+        
+        // Sélectionner un verset aléatoire parmi les non utilisés
+        const randomVerse = unusedVerses[Math.floor(Math.random() * unusedVerses.length)];
+        const verseIndex = verses.findIndex(v => v.verse === randomVerse.verse);
+        
+        // Marquer le verset comme utilisé
+        await database.markVerseAsUsed(verseIndex, guildId);
+        
+        return { verse: randomVerse, index: verseIndex };
+    } catch (error) {
+        console.error('Error getting unused verse:', error);
+        // Fallback: retourner un verset aléatoire
+        const randomIndex = Math.floor(Math.random() * verses.length);
+        return { verse: verses[randomIndex], index: randomIndex };
     }
-    
-    // Sélectionner un verset aléatoire parmi les non utilisés
-    const randomVerse = unusedVerses[Math.floor(Math.random() * unusedVerses.length)];
-    
-    // Ajouter le verset à la liste des utilisés
-    data.usedVerses.push(randomVerse.verse);
-    saveUsedVerses(data);
-    
-    return randomVerse;
 }
 
 module.exports = {
@@ -59,38 +39,40 @@ module.exports = {
         // Fonction pour envoyer la bénédiction quotidienne
         async function sendDailyBlessing() {
             try {
-                // Charger la configuration du serveur
-                const serverConfig = require('../data/serverConfig.json');
-                if (!serverConfig || !serverConfig.channels || !serverConfig.channels.blessings) {
-                    console.error('Blessings channel not configured');
-                    return;
+                // Parcourir tous les serveurs pour envoyer les bénédictions
+                for (const guild of client.guilds.cache.values()) {
+                    const serverConfig = await database.getServerConfig(guild.id);
+                    
+                    if (!serverConfig || !serverConfig.blessing_channel_id) {
+                        continue; // Passer au serveur suivant si pas de canal configuré
+                    }
+
+                    const channel = client.channels.cache.get(serverConfig.blessing_channel_id);
+                    if (!channel) {
+                        console.error(`Blessings channel not found for guild ${guild.name}`);
+                        continue;
+                    }
+
+                    // Obtenir un verset non utilisé pour ce serveur
+                    const { verse } = await getUnusedVerse(guild.id);
+
+                    // Créer l'embed
+                    const embed = createEmbed({
+                        title: 'Daily Blessing',
+                        description: `${config.visuals.divider}\n\n*"${verse.text}"*\n\n${config.visuals.divider}`,
+                        fields: [
+                            { 
+                                name: 'Reference', 
+                                value: `${config.emoji.book} **${verse.verse}**` 
+                            }
+                        ],
+                        footer: 'May this verse bring you peace and inspiration',
+                        color: COLORS.SECONDARY,
+                        image: 'https://i.imgur.com/7FXzh2f.png'
+                    });
+
+                    await channel.send({ embeds: [embed] });
                 }
-
-                const channel = client.channels.cache.get(serverConfig.channels.blessings);
-                if (!channel) {
-                    console.error('Blessings channel not found');
-                    return;
-                }
-
-                // Obtenir un verset non utilisé
-                const verse = getUnusedVerse();
-
-                // Créer l'embed
-                const embed = createEmbed({
-                    title: 'Daily Blessing',
-                    description: `${config.visuals.divider}\n\n*"${verse.text}"*\n\n${config.visuals.divider}`,
-                    fields: [
-                        { 
-                            name: 'Reference', 
-                            value: `${config.emoji.book} **${verse.verse}**` 
-                        }
-                    ],
-                    footer: 'May this verse bring you peace and inspiration',
-                    color: COLORS.SECONDARY,
-                    image: 'https://i.imgur.com/7FXzh2f.png'
-                });
-
-                await channel.send({ embeds: [embed] });
             } catch (error) {
                 console.error('Error sending daily blessing:', error);
             }

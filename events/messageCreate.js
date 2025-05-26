@@ -1,7 +1,7 @@
 const config = require('../config');
-const { addXP, getUserData } = require('../data/users');
 const { getRolesForLevel, checkForNewRole } = require('../data/roles');
 const { createEmbed, COLORS } = require('../utils/embeds');
+const database = require('../database');
 
 module.exports = {
     name: 'messageCreate',
@@ -46,30 +46,35 @@ module.exports = {
             const guildId = message.guild.id;
             
             // Obtenir le niveau actuel avant d'ajouter XP
-            const beforeData = getUserData(userId, guildId);
-            const prevLevel = beforeData.level;
+            const beforeData = await database.getUserLevel(userId, guildId);
+            const prevLevel = beforeData ? beforeData.level : 1;
             
             // Ajouter entre 15-25 XP par message avec un cooldown d'1 minute
             const xpAmount = Math.floor(Math.random() * 11) + 15; // 15-25 XP
-            const leveledUp = addXP(userId, guildId, xpAmount);
+            const result = await database.updateUserXP(userId, guildId, xpAmount);
+            
+            // Si l'utilisateur est en cooldown, ne rien faire
+            if (result.cooldown) {
+                return;
+            }
             
             // Si l'utilisateur a gagné un niveau
-            if (leveledUp) {
+            if (result.levelUp) {
                 // Obtenir les données mises à jour
-                const afterData = getUserData(userId, guildId);
+                const afterData = await database.getUserLevel(userId, guildId);
                 
                 // Vérifier si un nouveau rôle a été débloqué
-                const newRole = checkForNewRole(prevLevel, afterData.level);
+                const newRole = checkForNewRole(prevLevel, result.newLevel);
                 
                 // Créer un embed pour la montée de niveau
                 const levelUpEmbed = createEmbed({
-                    title: `Level ${afterData.level} Reached!`,
-                    description: `Congratulations ${message.author}! You've reached level ${afterData.level}!\n\n${config.visuals.divider}`,
+                    title: `Level ${result.newLevel} Reached!`,
+                    description: `Congratulations ${message.author}! You've reached level ${result.newLevel}!\n\n${config.visuals.divider}`,
                     color: COLORS.ACCENT,
                     fields: [
                         {
                             name: 'Current XP',
-                            value: `${afterData.xp} / ${afterData.xpForNextLevel} XP`,
+                            value: `${result.totalXP} XP`,
                             inline: true
                         }
                     ],

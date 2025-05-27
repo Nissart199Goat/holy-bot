@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const database = require('./database');
@@ -18,8 +18,50 @@ const client = new Client({
 // Command collection
 client.commands = new Collection();
 
-// Note: Command deployment is now handled by deploy-commands.js
-// Run "npm run deploy" to deploy commands
+// Auto-deploy commands function for guild
+async function autoDeployCommands() {
+    try {
+        console.log('🚀 AUTO-DÉPLOIEMENT DES COMMANDES');
+        console.log('==================================');
+        
+        // Get environment variables
+        const token = process.env.TOKEN || process.env.DISCORD_TOKEN;
+        const clientId = process.env.CLIENT_ID;
+        const guildId = process.env.GUILD_ID;
+        
+        if (!token || !clientId || !guildId) {
+            console.log('⚠️ Variables manquantes pour le déploiement automatique');
+            return;
+        }
+        
+        // Collect commands
+        const commands = [];
+        for (const [name, command] of client.commands) {
+            if (command.data) {
+                commands.push(command.data.toJSON());
+            }
+        }
+        
+        console.log(`📦 ${commands.length} commandes à déployer sur le serveur ${guildId}`);
+        
+        // Initialize REST
+        const rest = new REST({ version: '10' }).setToken(token);
+        
+        // Deploy to guild (fast deployment)
+        console.log('📤 Déploiement en cours...');
+        const data = await rest.put(
+            Routes.applicationGuildCommands(clientId, guildId),
+            { body: commands }
+        );
+        
+        console.log(`✅ ${data.length} commandes déployées avec succès !`);
+        console.log('⚡ Commandes disponibles immédiatement sur votre serveur');
+        
+    } catch (error) {
+        console.error('❌ Erreur lors du déploiement automatique:', error.message);
+        console.log('💡 Vous pouvez utiliser "npm run deploy" manuellement');
+    }
+}
 
 // Load commands
 const commandsPath = path.join(__dirname, 'commands');
@@ -49,15 +91,18 @@ for (const file of eventFiles) {
     }
 }
 
-// When the client is ready, log in
+// When the client is ready, deploy commands and connect to database
 client.once('ready', async () => {
-    console.log('Bot is ready!');
+    console.log(`🤖 Bot connecté en tant que ${client.user.tag}`);
+    console.log(`🏠 Serveurs: ${client.guilds.cache.size} | Utilisateurs: ${client.users.cache.size}`);
     
     // Connect to database
     await database.connect();
     
-    console.log('✅ Bot is fully operational!');
-    console.log('💡 Use "npm run deploy" to deploy commands if needed');
+    // Auto-deploy commands to your guild
+    await autoDeployCommands();
+    
+    console.log('✅ Bot entièrement opérationnel !');
 });
 
 // Graceful shutdown

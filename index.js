@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 const database = require('./database');
@@ -18,92 +18,8 @@ const client = new Client({
 // Command collection
 client.commands = new Collection();
 
-// Function to deploy commands
-async function deployCommands() {
-    try {
-        console.log('🔄 Starting command deployment...');
-        
-        const commands = [];
-        const commandsPath = path.join(__dirname, 'commands');
-        const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-        console.log(`📁 Found ${commandFiles.length} command files`);
-
-        // Load command files
-        for (const file of commandFiles) {
-            try {
-                const filePath = path.join(commandsPath, file);
-                const command = require(filePath);
-                if ('data' in command && 'execute' in command) {
-                    commands.push(command.data.toJSON());
-                    console.log(`✅ Loaded command: ${command.data.name}`);
-                } else {
-                    console.log(`⚠️ Skipping ${file}: missing data or execute`);
-                }
-            } catch (error) {
-                console.error(`❌ Error loading command ${file}:`, error.message);
-            }
-        }
-
-        console.log(`🎯 Total commands to deploy: ${commands.length}`);
-
-        // Create REST instance
-        const token = process.env.TOKEN || process.env.DISCORD_TOKEN;
-        if (!token) {
-            throw new Error('No Discord token found in environment variables');
-        }
-        
-        const rest = new REST().setToken(token);
-
-        console.log('Started refreshing application (/) commands...');
-
-        // Get the client ID and guild ID from the environment variables
-        const clientId = process.env.CLIENT_ID;
-        const guildId = process.env.GUILD_ID;
-
-        console.log(`🔑 Client ID: ${clientId ? 'Found' : 'Missing'}`);
-        console.log(`🏠 Guild ID: ${guildId ? guildId : 'Not set (will deploy globally)'}`);
-
-        if (!clientId) {
-            throw new Error('CLIENT_ID not found in environment variables');
-        }
-
-        // Delete all existing global commands
-        await rest.put(
-            Routes.applicationCommands(clientId),
-            { body: [] }
-        );
-        console.log('Successfully deleted all global application commands.');
-
-        // If guild ID is provided, delete guild-specific commands
-        if (guildId) {
-            await rest.put(
-                Routes.applicationGuildCommands(clientId, guildId),
-                { body: [] }
-            );
-            console.log('Successfully deleted all guild application commands.');
-
-            // Deploy new commands to guild
-            await rest.put(
-                Routes.applicationGuildCommands(clientId, guildId),
-                { body: commands }
-            );
-            console.log(`🎉 Successfully reloaded ${commands.length} guild (/) commands.`);
-        } else {
-            // Deploy new commands globally
-            await rest.put(
-                Routes.applicationCommands(clientId),
-                { body: commands }
-            );
-            console.log(`🎉 Successfully reloaded ${commands.length} global (/) commands.`);
-        }
-        
-        console.log('✅ Command deployment completed successfully!');
-    } catch (error) {
-        console.error('❌ Error deploying commands:', error);
-        console.error('Stack trace:', error.stack);
-    }
-}
+// Note: Command deployment is now handled by deploy-commands.js
+// Run "npm run deploy" to deploy commands
 
 // Load commands
 const commandsPath = path.join(__dirname, 'commands');
@@ -133,14 +49,15 @@ for (const file of eventFiles) {
     }
 }
 
-// When the client is ready, deploy commands and log in
+// When the client is ready, log in
 client.once('ready', async () => {
     console.log('Bot is ready!');
     
     // Connect to database
     await database.connect();
     
-    deployCommands();
+    console.log('✅ Bot is fully operational!');
+    console.log('💡 Use "npm run deploy" to deploy commands if needed');
 });
 
 // Graceful shutdown

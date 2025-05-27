@@ -18,7 +18,7 @@ const client = new Client({
 // Command collection
 client.commands = new Collection();
 
-// Auto-deploy commands function for guild
+// Auto-deploy commands function for guild with timeout and retry
 async function autoDeployCommands() {
     try {
         console.log('🚀 AUTO-DÉPLOIEMENT DES COMMANDES');
@@ -44,21 +44,42 @@ async function autoDeployCommands() {
         
         console.log(`📦 ${commands.length} commandes à déployer sur le serveur ${guildId}`);
         
-        // Initialize REST
-        const rest = new REST({ version: '10' }).setToken(token);
+        // Initialize REST with timeout
+        const rest = new REST({ 
+            version: '10',
+            timeout: 15000 // 15 secondes timeout
+        }).setToken(token);
         
-        // Deploy to guild (fast deployment)
+        // Deploy with timeout wrapper
         console.log('📤 Déploiement en cours...');
-        const data = await rest.put(
+        
+        const deployPromise = rest.put(
             Routes.applicationGuildCommands(clientId, guildId),
             { body: commands }
         );
+        
+        // Timeout wrapper
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Timeout: Déploiement trop long')), 20000);
+        });
+        
+        const data = await Promise.race([deployPromise, timeoutPromise]);
         
         console.log(`✅ ${data.length} commandes déployées avec succès !`);
         console.log('⚡ Commandes disponibles immédiatement sur votre serveur');
         
     } catch (error) {
         console.error('❌ Erreur lors du déploiement automatique:', error.message);
+        
+        if (error.message.includes('Timeout')) {
+            console.log('⏰ Le déploiement a pris trop de temps');
+            console.log('🔄 Les commandes peuvent quand même être déployées');
+        } else if (error.code === 50001) {
+            console.log('🔒 Permissions insuffisantes - vérifiez les permissions du bot');
+        } else if (error.code === 429) {
+            console.log('⏳ Rate limit atteint - réessayez dans quelques minutes');
+        }
+        
         console.log('💡 Vous pouvez utiliser "npm run deploy" manuellement');
     }
 }
@@ -99,8 +120,10 @@ client.once('ready', async () => {
     // Connect to database
     await database.connect();
     
-    // Auto-deploy commands to your guild
-    await autoDeployCommands();
+    // Auto-deploy commands to your guild (non-blocking)
+    autoDeployCommands().catch(err => {
+        console.log('⚠️ Déploiement automatique échoué, bot opérationnel quand même');
+    });
     
     console.log('✅ Bot entièrement opérationnel !');
 });
